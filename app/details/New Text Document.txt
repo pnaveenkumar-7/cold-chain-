@@ -1,0 +1,351 @@
+change the name as :FrostLedger
+  - ,meaning -Directly highlights the cold monitoring environment and the decentralized blockchain ledger.
+
+
+
+https://wokwi.com/projects/474411763997115393
+
+
+#include <WiFi.h>
+#include <PubSubClient.h>
+#include <SPI.h>
+#include <SD.h>
+#include <Wire.h>
+#include <RTClib.h>
+#include <DHT.h>
+#include "mbedtls/sha256.h"
+
+// Hardware Pin Definitions
+#define DHTPIN        15
+#define DHTTYPE       DHT22
+#define GAS_PIN       34       // Potentiometer (MQ-2 analog proxy)
+#define TAMPER_PIN    4        // Slide switch
+#define SD_CS         5        // MicroSD SPI Chip Select
+#define LED_SYNC      2        // Green indicator
+#define LED_TAMPER    13       // Red indicator
+
+// Network Config for Wokwi Virtual Gateway
+const char* ssid = "Wokwi-GUEST";
+const char* password = "";
+const char* mqtt_server = "broker.emqx.io"; // Public test broker
+const int mqtt_port = 1883;
+
+WiFiClient espClient;
+PubSubClient mqttClient(espClient);
+
+DHT dht(DHTPIN, DHTTYPE);
+RTC_DS1307 rtc;
+
+String prevHash = "0000000000000000000000000000000000000000000000000000000000000000";
+unsigned long recordIndex = 1;
+
+// Function to compute hardware-accelerated SHA-256
+String computeSHA256(String input) {
+  byte shaResult[32];
+  mbedtls_sha256_context ctx;
+  mbedtls_sha256_init(&ctx);
+  mbedtls_sha256_starts(&ctx, 0); // 0 = standard SHA-256
+  mbedtls_sha256_update(&ctx, (const unsigned char*)input.c_str(), input.length());
+  mbedtls_sha256_finish(&ctx, shaResult);
+  mbedtls_sha256_free(&ctx);
+
+  String hashStr = "";
+  for (int i = 0; i < 32; i++) {
+    char hex[3];
+    sprintf(hex, "%02x", shaResult[i]);
+    hashStr += hex;
+  }
+  return hashStr;
+}
+
+// Function to dump entire SD chain.log file directly to Serial
+void dumpSDLog() {
+  Serial.println("\n==================================================");
+  Serial.println(">>> READING /chain.log DIRECTLY FROM MICROSD <<<");
+  Serial.println("==================================================");
+  
+  File logFile = SD.open("/chain.log", FILE_READ);
+  if (logFile) {
+    while (logFile.available()) {
+      Serial.write(logFile.read());
+    }
+    logFile.close();
+    Serial.println("\n================ END OF FILE DUMP ================\n");
+  } else {
+    Serial.println("[ERR] Could not open /chain.log from SD card!");
+  }
+}
+
+// Wi-Fi Connection Manager
+void setupWiFi() {
+  Serial.print("[NET] Connecting to Wi-Fi: ");
+  Serial.println(ssid);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
+  int attempts = 0;
+  while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+    delay(500);
+    Serial.print(".");
+    attempts++;
+  }
+  
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\n[NET] Wi-Fi Connected. Local IP: " + WiFi.localIP().toString());
+  } else {
+    Serial.println("\n[NET] Wi-Fi Offline. Operating in zero-signal offline mode.");
+  }
+}
+
+// MQTT Reconnection Routine
+void reconnectMQTT() {
+  if (WiFi.status() != WL_CONNECTED) return;
+
+  if (!mqttClient.connected()) {
+    Serial.print("[MQTT] Connecting to broker: ");
+    Serial.print(mqtt_server);
+    String clientId = "FrostLedgerNode-" + String(random(0xffff), HEX);
+    
+    if (mqttClient.connect(clientId.c_str())) {
+      Serial.println(" [CONNECTED]");
+    } else {
+      Serial.print(" [FAILED] State: ");
+      Serial.println(mqttClient.state());
+    }
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(500);
+
+  Serial.println("\n==========================================");
+  Serial.println("      FROSTLEDGER FULL NODE FIRMWARE      ");
+  Serial.println("==========================================");
+
+  pinMode(TAMPER_PIN, INPUT_PULLUP);
+  pinMode(LED_SYNC, OUTPUT);
+  pinMode(LED_TAMPER, OUTPUT);
+
+  dht.begin();
+  Wire.begin(21, 22);
+
+  // Initialize RTC
+  if (!rtc.begin()) {
+    Serial.println("[ERR] DS1307 RTC offline!");
+  } else {
+    Serial.println("[OK]  DS1307 RTC active.");
+    if (!rtc.isrunning()) {
+      rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    }
+  }
+
+  // Initialize MicroSD Card
+  Serial.print("[INFO] Mounting MicroSD card (CS: GPIO 5)...");
+  if (!SD.begin(SD_CS)) {
+    Serial.println(" FAILED!");
+    Serial.println("[FATAL] MicroSD card failure. Halting.");
+    while (1) yield();
+  }
+  Serial.println(" OK!");
+
+  // Ensure fresh CSV header
+  if (!SD.exists("/chain.log")) {
+    File logFile = SD.open("/chain.log", FILE_WRITE);
+    if (logFile) {
+      logFile.println("Index,Timestamp,Temp_C,Humidity_Pct,GasRaw,TamperFlag,PrevHash,CurrentHash,Synced");
+      logFile.close();
+      Serial.println("[OK]  Created new /chain.log on SD.");
+    }
+  } else {
+    Serial.println("[OK]  Found /chain.log. Ready to resume logging.");
+  }
+
+  // Initialize Network
+  setupWiFi();
+  mqttClient.setServer(mqtt_server, mqtt_port);
+  Serial.println();
+}
+
+void loop() {
+  // 1. Maintain Network Stack
+  if (WiFi.status() == WL_CONNECTED) {
+    if (!mqttClient.connected()) {
+      reconnectMQTT();
+    }
+    mqttClient.loop();
+  }
+
+  // 2. Read Environmental & Tamper Sensors
+  float temp = dht.readTemperature();
+  float hum = dht.readHumidity();
+  int gasRaw = analogRead(GAS_PIN);
+  bool isTampered = (digitalRead(TAMPER_PIN) == HIGH);
+
+  if (isnan(temp) || isnan(hum)) {
+    temp = -1.0;
+    hum = -1.0;
+  }
+
+  // 3. Read Hardware Clock
+  DateTime now = rtc.now();
+  char timeBuf[25];
+  sprintf(timeBuf, "%04d-%02d-%02dT%02d:%02d:%02d", 
+          now.year(), now.month(), now.day(), 
+          now.hour(), now.minute(), now.second());
+
+  // 4. Construct Payload & Compute Cryptographic SHA-256 Hash
+  String payload = String(recordIndex) + "|" +
+                   String(timeBuf) + "|" +
+                   String(temp, 1) + "|" +
+                   String(hum, 1) + "|" +
+                   String(gasRaw) + "|" +
+                   String(isTampered ? "1" : "0") + "|" +
+                   prevHash;
+
+  String currentHash = computeSHA256(payload);
+
+  // 5. Append to Local MicroSD Log
+  File logFile = SD.open("/chain.log", FILE_APPEND);
+  if (logFile) {
+    String csvRow = String(recordIndex) + "," +
+                    String(timeBuf) + "," +
+                    String(temp, 1) + "," +
+                    String(hum, 1) + "," +
+                    String(gasRaw) + "," +
+                    String(isTampered ? "1" : "0") + "," +
+                    prevHash + "," +
+                    currentHash + ",0";
+    logFile.println(csvRow);
+    logFile.close();
+
+    Serial.println("------------------------------------------------");
+    Serial.print("Block #"); Serial.println(recordIndex);
+    Serial.print("Time    : "); Serial.println(timeBuf);
+    Serial.print("Temp/Hum: "); Serial.print(temp, 1); Serial.print(" C | "); Serial.print(hum, 1); Serial.println(" %");
+    Serial.print("Gas Raw : "); Serial.println(gasRaw);
+    Serial.print("Tamper  : "); Serial.println(isTampered ? "ALERT! TAMPERED" : "SECURE");
+    Serial.print("PrevHash: "); Serial.println(prevHash);
+    Serial.print("CurrHash: "); Serial.println(currentHash);
+  }
+
+  // 6. Push Live Telemetry to MQTT if Network is Available
+  if (mqttClient.connected()) {
+    String mqttPayload = "{\"index\":" + String(recordIndex) + 
+                         ",\"time\":\"" + String(timeBuf) + "\"" +
+                         ",\"temp\":" + String(temp, 1) + 
+                         ",\"hum\":" + String(hum, 1) + 
+                         ",\"gas\":" + String(gasRaw) + 
+                         ",\"tamper\":" + String(isTampered ? 1 : 0) + 
+                         ",\"hash\":\"" + currentHash + "\"}";
+                         
+    mqttClient.publish("frostledger/sih26232/telemetry", mqttPayload.c_str());
+    Serial.println("[MQTT] Telemetry synced to cloud broker.");
+  }
+
+  // 7. Visual Indicators
+  if (isTampered) {
+    digitalWrite(LED_TAMPER, HIGH);
+    // Dump the SD file whenever a tamper breach occurs
+    dumpSDLog();
+  } else {
+    digitalWrite(LED_TAMPER, LOW);
+  }
+
+  // Sync / Heartbeat Blink
+  digitalWrite(LED_SYNC, HIGH);
+  delay(120);
+  digitalWrite(LED_SYNC, LOW);
+
+  // 8. Advance State
+  prevHash = currentHash;
+  recordIndex++;
+
+  // Every 5th block, dump the file to confirm writing
+  if (recordIndex % 5 == 0 && !isTampered) {
+    dumpSDLog();
+  }
+
+  delay(6000);
+}
+
+
+
+
+
+{
+  "version": 1,
+  "author": "Anonymous maker",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 43.24, "attrs": {} },
+    { "type": "wokwi-microsd-card", "id": "sd1", "top": -86.17, "left": -115.13, "attrs": {} },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht1",
+      "top": -210.9,
+      "left": 215.4,
+      "attrs": { "temperature": "-9.2", "humidity": "0" }
+    },
+    { "type": "wokwi-slide-switch", "id": "sw1", "top": -197.2, "left": 60.7, "attrs": {} },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -157.2,
+      "left": 13.4,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": -15.25,
+      "left": 163.2,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led2",
+      "top": -205.2,
+      "left": 109.4,
+      "attrs": { "color": "limegreen" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": 13.55,
+      "left": 163.2,
+      "attrs": { "value": "220" }
+    },
+    { "type": "wokwi-ds1307", "id": "rtc1", "top": -91.8, "left": 288.1, "attrs": {} },
+    { "type": "wokwi-gas-sensor", "id": "gas1", "top": 31.5, "left": -127.4, "attrs": {} }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "sd1:CS", "esp:5", "green", [ "h0" ] ],
+    [ "sd1:SCK", "esp:18", "green", [ "h0" ] ],
+    [ "sd1:DO", "esp:19", "green", [ "h0" ] ],
+    [ "sd1:DI", "esp:23", "green", [ "h0" ] ],
+    [ "sd1:VCC", "esp:5V", "red", [ "h0" ] ],
+    [ "sd1:GND", "esp:GND.2", "black", [ "h0" ] ],
+    [ "dht1:SDA", "esp:15", "green", [ "v0" ] ],
+    [ "dht1:VCC", "esp:3V3", "red", [ "v0" ] ],
+    [ "dht1:GND", "esp:GND.2", "black", [ "v0" ] ],
+    [ "sw1:1", "esp:4", "green", [ "v0" ] ],
+    [ "sw1:2", "esp:GND.2", "green", [ "v0" ] ],
+    [ "led1:A", "r1:1", "green", [ "v0" ] ],
+    [ "led1:C", "esp:GND.2", "green", [ "v0" ] ],
+    [ "r1:2", "esp:13", "green", [ "v0" ] ],
+    [ "led2:A", "r2:1", "green", [ "v0" ] ],
+    [ "r2:2", "esp:2", "green", [ "v0" ] ],
+    [ "led2:C", "esp:GND.2", "green", [ "v0" ] ],
+    [ "rtc1:SDA", "esp:21", "green", [ "h0" ] ],
+    [ "rtc1:GND", "esp:GND.2", "black", [ "h0" ] ],
+    [ "rtc1:5V", "esp:5V", "red", [ "h0" ] ],
+    [ "rtc1:SCL", "esp:22", "green", [ "h0" ] ],
+    [ "gas1:VCC", "esp:5V", "red", [ "h0" ] ],
+    [ "gas1:GND", "esp:GND.2", "black", [ "h0" ] ],
+    [ "gas1:AOUT", "esp:34", "green", [ "h0" ] ]
+  ],
+  "dependencies": {}
+}

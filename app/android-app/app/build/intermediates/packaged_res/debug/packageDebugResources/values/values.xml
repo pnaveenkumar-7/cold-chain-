@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cold-Chain Inspector</string>
+    <string name="camera_permission_required">Camera permission is required for QR scanning</string>
+    <string name="certified_fresh">Certified Fresh</string>
+    <string name="fraud_warning">Fraud / Spoilage Warning</string>
+    <string name="inspecting">Inspecting…</string>
+    <string name="network_polygon">Polygon Amoy (80002)</string>
+    <string name="scan_qr">Scan QR</string>
+    <string name="tab_admin">Admin Portal</string>
+    <string name="tab_public">Public Verification</string>
+    <string name="tab_sender">Sender Portal</string>
+    <string name="verify_shipment">Verify Shipment</string>
+    <style name="Theme.ColdChainApp" parent="android:Theme.Material.Light.NoActionBar"/>
+</resources>

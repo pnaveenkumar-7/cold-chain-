@@ -1,0 +1,18 @@
+STATUS: 1
+
+STDOUT:
+
+[92mUsed library[0m [92mVersion[0m [90mPath[0m
+[93mWiFi[0m         2.0.0   [90mC:\Users\navee\AppData\Local\Arduino15\packages\arduino\hardware\esp32\2.0.18-arduino.5\libraries\WiFi[0m
+[93mPubSubClient[0m 2.8     [90mC:\Users\navee\OneDrive\ドキュメント\Arduino\libraries\PubSubClient[0m
+
+[92mUsed platform[0m [92mVersion[0m          [90mPath[0m
+[93marduino:esp32[0m 2.0.18-arduino.5 [90mC:\Users\navee\AppData\Local\Arduino15\packages\arduino\hardware\esp32\2.0.18-arduino.5[0m
+
+
+STDERR:
+B:\hackaton\firmware\firmware.ino:8:10: fatal error: PubSubClient.h: No such file or directory
+ #include <PubSubClient.h>
+          ^~~~~~~~~~~~~~~~
+compilation terminated.
+Error during build: exit status 1

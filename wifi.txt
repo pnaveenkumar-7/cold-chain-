@@ -1,0 +1,23 @@
+
+There is 1 interface on the system: 
+
+    Name                   : Wi-Fi
+    Description            : Qualcomm Atheros QCA9377 Wireless Network Adapter
+    GUID                   : 5846df26-ba1d-433a-a03d-b17cb96e1864
+    Physical address       : 10:63:c8:df:a5:9b
+    State                  : connected
+    SSID                   : Airtel_shan_3936
+    BSSID                  : 90:9f:22:68:8e:47
+    Network type           : Infrastructure
+    Radio type             : 802.11ac
+    Authentication         : WPA2-Personal
+    Cipher                 : CCMP
+    Connection mode        : Auto Connect
+    Channel                : 157
+    Receive rate (Mbps)    : 433.3
+    Transmit rate (Mbps)   : 433.3
+    Signal                 : 100% 
+    Profile                : Airtel_shan_3936 
+
+    Hosted network status  : Not available
+

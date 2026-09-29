@@ -1,0 +1,9 @@
+{
+  "additionalFiles": "",
+  "compiler.optimization_flags": "-Os",
+  "customBuildProperties": "",
+  "fqbn": "arduino:esp32:nano_nora",
+  "hardwareFolders": "C:\\Users\\navee\\AppData\\Local\\Arduino15\\packages",
+  "otherLibrariesFolders": "C:\\Users\\navee\\AppData\\Local\\Arduino15\\libraries,C:\\Users\\navee\\OneDrive\\ドキュメント\\Arduino\\libraries",
+  "sketchLocation": "B:\\hackaton\\sketch"
+}

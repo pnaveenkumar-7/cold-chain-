@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="meshGlow" cx="25%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#0f2b48"/>
+      <stop offset="50%" stop-color="#071322"/>
+      <stop offset="100%" stop-color="#03070d"/>
+    </radialGradient>
+
+    <!-- Chrome / Ice Shimmer Gradient -->
+    <linearGradient id="iceShimmer" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="#e0f7fa"/>
+      <stop offset="70%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+
+    <!-- Liquid Neon Core Gradient -->
+    <linearGradient id="neonBeam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00ffff"/>
+      <stop offset="50%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+
+    <!-- Glass Isometric Facet Gradients -->
+    <linearGradient id="glassTop" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00ffff" stop-opacity="0.65"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="glassLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0369a1" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#082f49" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="glassRight" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#034e7b" stop-opacity="0.85"/>
+    </linearGradient>
+
+    <!-- Cyber Shield Outline Gradient -->
+    <linearGradient id="shieldBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00ffff"/>
+      <stop offset="50%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+
+    <!-- High-Pass Glow Filters -->
+    <filter id="intenseGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur1"/>
+      <feGaussianBlur stdDeviation="16" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="frostAura" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Deep Cyber-Dark Backdrop -->
+  <rect width="900" height="360" rx="20" fill="url(#meshGlow)"/>
+
+  <!-- Geometric Circuit Traces (Background Tech Matrix) -->
+  <g opacity="0.12" stroke="#00ffff" stroke-width="1.2" fill="none">
+    <path d="M 40,60 L 120,60 L 160,100 M 160,260 L 120,300 L 40,300" />
+    <path d="M 860,60 L 780,60 L 740,100 M 740,260 L 780,300 L 860,300" />
+    <circle cx="160" cy="100" r="3" fill="#00ffff"/>
+    <circle cx="160" cy="260" r="3" fill="#00ffff"/>
+    <circle cx="740" cy="100" r="3" fill="#00ffff"/>
+    <circle cx="740" cy="260" r="3" fill="#00ffff"/>
+  </g>
+
+  <!-- ==================== EMBLEM: THE CRYPTOGRAPHIC ICE-SHIELD ==================== -->
+  <g transform="translate(160, 180)">
+    
+    <!-- Outer Cyan Ambient Halo -->
+    <circle cx="0" cy="0" r="80" fill="#00ffff" opacity="0.08" filter="url(#intenseGlow)"/>
+
+    <!-- Dynamic Cyber-Shield Outer Frame -->
+    <polygon points="0,-115 95,-60 95,45 0,115 -95,45 -95,-60" 
+             fill="#081526" fill-opacity="0.6"
+             stroke="url(#shieldBorder)" stroke-width="2.5" 
+             filter="url(#frostAura)"/>
+
+    <!-- Secondary Hexagonal Quantum Ring -->
+    <polygon points="0,-95 78,-50 78,35 0,95 -78,35 -78,-50" 
+             fill="none" stroke="#38bdf8" stroke-width="1" stroke-opacity="0.4" 
+             stroke-dasharray="8, 4"/>
+
+    <!-- Floating Hash Shards / Cryo Crystals (The 6 Nodes) -->
+    <!-- Top -->
+    <g transform="translate(0, -95)">
+      <polygon points="0,-12 7,0 0,12 -7,0" fill="#00ffff" filter="url(#frostAura)"/>
+      <line x1="0" y1="12" x2="0" y2="40" stroke="#00ffff" stroke-width="1.5" stroke-opacity="0.8"/>
+    </g>
+    <!-- Bottom -->
+    <g transform="translate(0, 95)">
+      <polygon points="0,-12 7,0 0,12 -7,0" fill="#00ffff" filter="url(#frostAura)"/>
+      <line x1="0" y1="-12" x2="0" y2="-40" stroke="#00ffff" stroke-width="1.5" stroke-opacity="0.8"/>
+    </g>
+    <!-- Top-Right -->
+    <g transform="translate(78, -50)">
+      <polygon points="0,-10 6,0 0,10 -6,0" fill="#38bdf8"/>
+      <line x1="-5" y1="3" x2="-28" y2="18" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.6"/>
+    </g>
+    <!-- Bottom-Right -->
+    <g transform="translate(78, 35)">
+      <polygon points="0,-10 6,0 0,10 -6,0" fill="#38bdf8"/>
+      <line x1="-5" y1="-3" x2="-28" y2="-18" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.6"/>
+    </g>
+    <!-- Bottom-Left -->
+    <g transform="translate(-78, 35)">
+      <polygon points="0,-10 6,0 0,10 -6,0" fill="#38bdf8"/>
+      <line x1="5" y1="-3" x2="28" y2="-18" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.6"/>
+    </g>
+    <!-- Top-Left -->
+    <g transform="translate(-78, -50)">
+      <polygon points="0,-10 6,0 0,10 -6,0" fill="#38bdf8"/>
+      <line x1="5" y1="3" x2="28" y2="18" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.6"/>
+    </g>
+
+    <!-- Central Isometric Hyper-Cube (Crystal Cold Ledger) -->
+    <!-- Top Crystal Facet -->
+    <polygon points="0,-46 40,-23 0,0 -40,-23" fill="url(#glassTop)"/>
+    <!-- Left Crystal Facet -->
+    <polygon points="-40,-23 0,0 0,46 -40,23" fill="url(#glassLeft)"/>
+    <!-- Right Crystal Facet -->
+    <polygon points="0,0 40,-23 40,23 0,46" fill="url(#glassRight)"/>
+
+    <!-- Internal Quantum Core Dot -->
+    <circle cx="0" cy="0" r="4.5" fill="#ffffff" filter="url(#intenseGlow)"/>
+
+    <!-- Digital Hash Coordinate Markers -->
+    <circle cx="-52" cy="0" r="2" fill="#00ffff"/>
+    <line x1="-52" y1="0" x2="-40" y2="0" stroke="#00ffff" stroke-width="1"/>
+    <circle cx="52" cy="0" r="2" fill="#00ffff"/>
+    <line x1="52" y1="0" x2="40" y2="0" stroke="#00ffff" stroke-width="1"/>
+  </g>
+
+  <!-- ==================== MODERN TYPOGRAPHY & BRAND SUITE ==================== -->
+  <g transform="translate(315, 140)">
+    
+    <!-- BRAND NAME -->
+    <g>
+      <!-- FROST (Ice Chrome Polish) -->
+      <text x="0" y="44" 
+            font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Montserrat', sans-serif" 
+            font-size="68" 
+            font-weight="900" 
+            letter-spacing="1.5" 
+            fill="url(#iceShimmer)">FROST</text>
+
+      <!-- LEDGER (Vibrant Cyan Neon Glow) -->
+      <text x="260" y="44" 
+            font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Montserrat', sans-serif" 
+            font-size="68" 
+            font-weight="300" 
+            letter-spacing="5" 
+            fill="#00ffff" 
+            filter="url(#frostAura)">LEDGER</text>
+    </g>
+
+    <!-- Precision High-Tech Dividing Rail -->
+    <g transform="translate(0, 68)">
+      <line x1="0" y1="0" x2="520" y2="0" stroke="#1e3a5f" stroke-width="2"/>
+      <line x1="0" y1="0" x2="160" y2="0" stroke="url(#neonBeam)" stroke-width="2.5" filter="url(#frostAura)"/>
+      <circle cx="160" cy="0" r="3" fill="#00ffff"/>
+    </g>
+
+    <!-- Subtitle & Protocol Badge -->
+    <g transform="translate(0, 96)">
+      <text x="0" y="0" 
+            font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" 
+            font-size="12" 
+            font-weight="600" 
+            letter-spacing="4" 
+            fill="#7dd3fc">IMMUTABLE COLD-CHAIN TELEMETRY</text>
+
+      <!-- Terminal / SIH Metadata Tags -->
+      <g transform="translate(0, 18)">
+        <!-- Node Tag -->
+        <rect x="0" y="0" width="125" height="22" rx="4" fill="#082f49" stroke="#0284c7" stroke-width="1"/>
+        <text x="8" y="15" font-family="ui-monospace, Consolas, monospace" font-size="9.5" font-weight="700" fill="#38bdf8" letter-spacing="1">SIH26232 :: EDGE</text>
+        
+        <!-- Polygon Testnet Tag -->
+        <rect x="135" y="0" width="135" height="22" rx="4" fill="#1e1b4b" stroke="#6366f1" stroke-width="1"/>
+        <text x="143" y="15" font-family="ui-monospace, Consolas, monospace" font-size="9.5" font-weight="700" fill="#a5b4fc" letter-spacing="1">POLYGON AMOY</text>
+
+        <!-- Integrity Status -->
+        <rect x="280" y="0" width="105" height="22" rx="4" fill="#064e3b" stroke="#10b981" stroke-width="1"/>
+        <text x="290" y="15" font-family="ui-monospace, Consolas, monospace" font-size="9.5" font-weight="700" fill="#6ee7b7" letter-spacing="1">ZERO-LOSS 2G</text>
+      </g>
+    </g>
+  </g>
+</svg>

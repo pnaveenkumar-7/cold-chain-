@@ -1,0 +1,4 @@
+Board Name         FQBN
+Arduino Nano ESP32 arduino:esp32:nano_nora
+
+

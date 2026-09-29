@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cold Chain Traceability Node (SIH26232) - Technical Specification</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 16mm 18mm 16mm;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #1a1a1a;
+      line-height: 1.5;
+      font-size: 11pt;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      font-size: 20pt;
+      color: #0f172a;
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 6px;
+      margin-top: 0;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      font-size: 11pt;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    h2 {
+      font-size: 13pt;
+      color: #1e293b;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 4px;
+      margin-top: 22px;
+      margin-bottom: 10px;
+      page-break-after: avoid;
+    }
+    h3 {
+      font-size: 11pt;
+      color: #334155;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      page-break-after: avoid;
+    }
+    p, li {
+      font-size: 10pt;
+      color: #334155;
+    }
+    ul {
+      margin-top: 4px;
+      margin-bottom: 10px;
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 4px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      margin-bottom: 14px;
+      font-size: 9pt;
+      page-break-inside: avoid;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 6px 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      font-weight: 600;
+    }
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    pre {
+      background-color: #0f172a;
+      color: #f8fafc;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 8.5pt;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      overflow-x: auto;
+      page-break-inside: avoid;
+      margin-top: 6px;
+      margin-bottom: 12px;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 9pt;
+      background-color: #f1f5f9;
+      padding: 1px 4px;
+      border-radius: 3px;
+      color: #0f172a;
+    }
+    pre code {
+      background-color: transparent;
+      padding: 0;
+      color: inherit;
+    }
+    .callout {
+      border-left: 4px solid #2563eb;
+      background-color: #eff6ff;
+      padding: 8px 12px;
+      margin: 10px 0;
+      font-size: 9.5pt;
+      page-break-inside: avoid;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 7.5pt;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .verified { background-color: #dcfce7; color: #166534; }
+    .estimate { background-color: #fef9c3; color: #854d0e; }
+  </style>
+</head>
+<body>
+
+  <h1>Cold Chain Traceability Node (SIH26232)</h1>
+  <div class="subtitle">Complete Technical Specification, Engineering Rationales & Updated Bill of Materials</div>
+
+  <h2>1. System Architecture & Problem Statement Alignment</h2>
+  <p>
+    This node provides continuous environmental and physical tamper tracking for temperature-sensitive cargo (pharmaceuticals, dairy, and agricultural produce)[cite: 1, 2]. Designed for Smart India Hackathon problem statement <strong>SIH26232</strong>, the system maintains integrity across cellular dead zones via a local append-only cryptographic hash chain on non-volatile flash storage[cite: 1, 2].
+  </p>
+  <p>
+    When cellular connectivity returns, unsynced readings upload via MQTT over TLS to an ingestion backend[cite: 1, 2]. The backend validates chain continuity, computes a Merkle root, and anchors the proof onto the <strong>Polygon Amoy testnet</strong>[cite: 1, 2].
+  </p>
+
+  <pre>
+[Sensors: Temp/Humidity + Gas + Tamper Switch]
+                      │
+                      ▼
+             [ESP32 Microcontroller]
+                      │
+         ┌────────────┴────────────┐
+         ▼                         ▼
+ [MicroSD Card SPI]      [SIM800L GSM Module]
+ (Local SHA-256 Chain)    (MQTT over TLS Sync)
+                                   │
+                                   ▼
+                      [Node.js / Express Backend]
+                                   │
+                      ┌────────────┴────────────┐
+                      ▼                         ▼
+             [Merkle Tree Root]       [PostgreSQL / IPFS]
+                      │
+                      ▼
+          [Polygon Amoy Smart Contract]
+                      │
+                      ▼
+         [React / Vite QR Dashboard]
+  </pre>
+
+  <h2>2. Master Bill of Materials (BOM)</h2>
+  
+  <h3>Tier 1: Core Bench Prototype</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Component</th>
+        <th>Engineering Specification / Notes</th>
+        <th>Qty</th>
+        <th>Approx. Price (₹)</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><strong>ESP32 DevKit V1</strong></td>
+        <td>38-pin, Dual-Core Xtensa LX6, Wi-Fi + BLE, hardware SHA-256[cite: 1, 2]</td>
+        <td>1</td>
+        <td>390</td>
+        <td><span class="badge verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><strong>DHT22 / AM2302</strong></td>
+        <td>Digital temperature and relative humidity sensor</td>
+        <td>1</td>
+        <td>168</td>
+        <td><span class="badge verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><strong>MQ135 Gas Sensor</strong></td>
+        <td>Analog air quality/VOC sensor (ethylene spoilage proxy)[cite: 1, 2]</td>
+        <td>1</td>
+        <td>99</td>
+        <td><span class="badge verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><strong>Tamper Switch</strong></td>
+        <td>Normally Closed (NC) magnetic reed or micro limit switch[cite: 1, 2]</td>
+        <td>1</td>
+        <td>40</td>
+        <td><span class="badge estimate">Estimate</span></td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><strong>SIM800L GSM Module</strong></td>
+        <td>V2 module with whip antenna (Requires 2G SIM: Airtel/Vi)</td>
+        <td>1</td>
+        <td>470</td>
+        <td><span class="badge verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td><strong>MicroSD SPI Module</strong></td>
+        <td>3.3V/5V compatible SPI interface card breakout[cite: 1, 2]</td>
+        <td>1</td>
+        <td>29</td>
+        <td><span class="badge verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td><strong>MicroSD Card (16GB)</strong></td>
+        <td>Class 10 FAT32 formatted card for append-only logging</td>
+        <td>1</td>
+        <td>250</td>
+        <td><span class="badge estimate">Estimate</span></td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td><strong>DS3231 RTC Module</strong></td>
+        <td>High-precision I2C Real-Time Clock module</td>
+        <td>1</td>
+        <td>119</td>
+        <td><span class="badge verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td><strong>CR2032 Coin Cell</strong></td>
+        <td>3V lithium battery for RTC non-volatile timekeeping</td>
+        <td>1</td>
+        <td>20</td>
+        <td><span class="badge estimate">Estimate</span></td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td><strong>18650 Li-ion Cell</strong></td>
+        <td>3.7V nominal, 2000mAh–2600mAh rechargeable cell[cite: 1, 2]</td>
+        <td>1</td>
+        <td>149</td>
+        <td><span class="badge verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td>11</td>
+        <td><strong>18650 Battery Holder</strong></td>
+        <td>Single-cell holder with leads</td>
+        <td>1</td>
+        <td>19</td>
+        <td><span class="badge verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td>12</td>
+        <td><strong>TP4056 Dual Protection</strong></td>
+        <td>Linear charger with DW01A + FS8205A protection (OUT+/OUT-)</td>
+        <td>1</td>
+        <td>25</td>
+        <td><span class="badge estimate">Estimate</span></td>
+      </tr>
+      <tr>
+        <td>13</td>
+        <td><strong>MT3608 Boost Converter</strong></td>
+        <td>DC-DC step-up module adjusted to stable 5.0V output</td>
+        <td>1</td>
+        <td>50</td>
+        <td><span class="badge estimate">Estimate</span></td>
+      </tr>
+      <tr>
+        <td>14</td>
+        <td><strong>1000 µF Capacitor</strong></td>
+        <td>16V Low-ESR buffer across SIM800L power rail (absorbs 2A bursts)</td>
+        <td>1</td>
+        <td>10</td>
+        <td><span class="badge estimate">Estimate</span></td>
+      </tr>
+      <tr>
+        <td>15</td>
+        <td><strong>SPST Slide Switch</strong></td>
+        <td>Miniature toggle switch between battery output and converter</td>
+        <td>1</td>
+        <td>10</td>
+        <td><span class="badge estimate">Estimate</span></td>
+      </tr>
+      <tr>
+        <td>16</td>
+        <td><strong>5mm LEDs (Pack of 5)</strong></td>
+        <td>Red (tamper breach), Green (system sync/heartbeat)</td>
+        <td>1</td>
+        <td>15</td>
+        <td><span class="badge estimate">Estimate</span></td>
+      </tr>
+      <tr>
+        <td>17</td>
+        <td><strong>Resistors (Pack of 10)</strong></td>
+        <td>220Ω (LED limiting) + 10kΩ (switch pull-ups)</td>
+        <td>1</td>
+        <td>15</td>
+        <td><span class="badge estimate">Estimate</span></td>
+      </tr>
+      <tr>
+        <td>18</td>
+        <td><strong>MB102 Breadboard</strong></td>
+        <td>830-tie-point solderless evaluation breadboard</td>
+        <td>1</td>
+        <td>45</td>
+        <td><span class="badge verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td>19</td>
+        <td><strong>Jumper Wire Ribbon</strong></td>
+        <td>40-pin M-M (20cm) and 40-pin M-F (30cm) bundles</td>
+        <td>1</td>
+        <td>98</td>
+        <td><span class="badge verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td colspan="3"><strong>Core Bench Subtotal</strong></td>
+        <td colspan="3"><strong>≈ ₹2,021</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Tier 2: Enclosure Packaging & Optional Add-ons</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Component</th>
+        <th>Role / Purpose</th>
+        <th>Qty</th>
+        <th>Approx. Price (₹)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>IP65/IP67 Enclosure</strong></td>
+        <td>Weatherproof junction box (150 × 100 × 70 mm)[cite: 1, 2]</td>
+        <td>1</td>
+        <td>400</td>
+      </tr>
+      <tr>
+        <td><strong>PG7 Cable Glands & Standoffs</strong></td>
+        <td>Liquid-tight cord seals and hardware fasteners[cite: 1, 2]</td>
+        <td>1</td>
+        <td>150</td>
+      </tr>
+      <tr>
+        <td><strong>MPU6050 6-Axis IMU</strong></td>
+        <td>Transit drop, tilt, and impact shock recording</td>
+        <td>1</td>
+        <td>140</td>
+      </tr>
+      <tr>
+        <td><strong>NEO-6M GPS Module</strong></td>
+        <td>Real-time transit coordinate tracking via UART</td>
+        <td>1</td>
+        <td>550</td>
+      </tr>
+      <tr>
+        <td><strong>ESP32-CAM + OV2640</strong></td>
+        <td>Visual photographic evidence captured on tamper switch trigger</td>
+        <td>1</td>
+        <td>480</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>3. Hardware Rationales: Essential Additions vs. Exclusions</h2>
+
+  <h3>Engineering Rationales for Added Components</h3>
+  <ul>
+    <li><strong>1000 µF Low-ESR Buffer Capacitor:</strong> The SIM800L draws current spikes up to 2.0A during cellular handshakes. Breadboard rails and thin wires have resistance that causes instant voltage drop. Without this capacitor placed directly across the modem's power pins, the supply rail drops below 3.4V, causing brownout reset loops on both the SIM800L and the ESP32.</li>
+    <li><strong>TP4056 with Protection (DW01A + FS8205A):</strong> Standard 2-terminal chargers do not protect the battery during discharge. The protected version provides dedicated <code>OUT+</code> and <code>OUT-</code> terminals that isolate the load if battery voltage falls below 2.5V, preventing permanent cell damage.</li>
+    <li><strong>SPST Slide Switch:</strong> Provides a clean physical power disconnect between the battery and the MT3608 boost converter, avoiding the need to yank wires or battery contacts during bench flashing and debugging.</li>
+    <li><strong>Discrete Passive Components:</strong> Replaced bulk commercial component kits (costing ₹465) with targeted packs of discrete LEDs and resistors, reducing costs by over ₹400 while retaining necessary circuit diagnostics.</li>
+  </ul>
+
+  <h3>Items Excluded from Scope & Evaluated Alternatives</h3>
+  <ul>
+    <li><strong>LoRa RA-02 (SX1278):</strong> LoRa requires dedicated gateway base stations within 2–10 km line of sight. Long-haul refrigerated freight travels along major highways where private gateways do not exist. Cellular 2G GPRS already provides wide national coverage, making LoRa an unnecessary redundancy.</li>
+    <li><strong>USB Type-A to Micro-USB Cable:</strong> Excluded from the billable BOM because it is a generic lab bench utility item that artificially inflates prototype hardware costs.</li>
+    <li><strong>ATECC608A Cryptographic Co-Processor:</strong> Difficult to procure locally and requires complex I2C key provisioning. The ESP32's internal hardware-accelerated SHA-256 engine combined with <code>mbedtls</code> meets all cryptographic integrity and hash-chaining requirements without extra chips[cite: 1, 2].</li>
+    <li><strong>6V Solar Energy Harvesting Panel:</strong> Cold chain cargo travels inside lightless, heavily insulated metal reefer boxes[cite: 1, 2]. Solar generation is physically impossible inside the hold, and piercing the container wall for external wiring compromises thermal insulation.</li>
+    <li><strong>IP65/67 Enclosure (During Bench Stage):</strong> Sealed enclosures make probe debugging and rewiring difficult during development[cite: 1, 2]. Open breadboards or clear acrylic housings are preferred for hackathon jury evaluation.</li>
+    <li><strong>5V Active Buzzer Module:</strong> Acoustic alerts placed inside sound-insulated transport trucks cannot be heard by the driver. Tamper violations are instead recorded immutably on-chain and alerted via the web dashboard[cite: 1, 2].</li>
+    <li><strong>Secondary ESP32-CAM Architecture:</strong> If visual tamper evidence is desired, the ESP32-CAM must not run continuous video loops. It should be wired as an event-driven slave device in deep sleep, waking only when the physical tamper switch triggers an external interrupt, saving a single snapshot to its local SD card before powering down.</li>
+  </ul>
+
+  <h2>4. Hardware Pinout & Wiring Map</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Interface Bus</th>
+        <th>Module & Pin</th>
+        <th>ESP32 Pin</th>
+        <th>Electrical Configuration / Role</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>I2C Bus (Shared)</strong></td>
+        <td>DS3231 (SDA) / MPU6050 (SDA)</td>
+        <td><code>GPIO 21</code></td>
+        <td>Hardware I2C data; requires 4.7kΩ pull-up to 3.3V[cite: 1, 2]</td>
+      </tr>
+      <tr>
+        <td><strong>I2C Bus (Shared)</strong></td>
+        <td>DS3231 (SCL) / MPU6050 (SCL)</td>
+        <td><code>GPIO 22</code></td>
+        <td>Hardware I2C clock; requires 4.7kΩ pull-up to 3.3V[cite: 1, 2]</td>
+      </tr>
+      <tr>
+        <td><strong>VSPI Bus</strong></td>
+        <td>MicroSD (CS)</td>
+        <td><code>GPIO 5</code></td>
+        <td>Hardware Chip Select (Active Low)[cite: 1, 2]</td>
+      </tr>
+      <tr>
+        <td><strong>VSPI Bus</strong></td>
+        <td>MicroSD (SCK)</td>
+        <td><code>GPIO 18</code></td>
+        <td>Hardware SPI Clock[cite: 1, 2]</td>
+      </tr>
+      <tr>
+        <td><strong>VSPI Bus</strong></td>
+        <td>MicroSD (MISO)</td>
+        <td><code>GPIO 19</code></td>
+        <td>Hardware SPI Master-In Slave-Out[cite: 1, 2]</td>
+      </tr>
+      <tr>
+        <td><strong>VSPI Bus</strong></td>
+        <td>MicroSD (MOSI)</td>
+        <td><code>GPIO 23</code></td>
+        <td>Hardware SPI Master-Out Slave-In[cite: 1, 2]</td>
+      </tr>
+      <tr>
+        <td><strong>Hardware UART2</strong></td>
+        <td>SIM800L (TXD)</td>
+        <td><code>GPIO 16</code></td>
+        <td>ESP32 RX2 pin (3.3V logic level)[cite: 1, 2]</td>
+      </tr>
+      <tr>
+        <td><strong>Hardware UART2</strong></td>
+        <td>SIM800L (RXD)</td>
+        <td><code>GPIO 17</code></td>
+        <td>ESP32 TX2 pin[cite: 1, 2]</td>
+      </tr>
+      <tr>
+        <td><strong>1-Wire Digital</strong></td>
+        <td>DHT22 (DATA)</td>
+        <td><code>GPIO 15</code></td>
+        <td>Digital Bi-directional; 10kΩ pull-up to 3.3V</td>
+      </tr>
+      <tr>
+        <td><strong>Analog ADC1</strong></td>
+        <td>MQ135 (AOUT)</td>
+        <td><code>GPIO 34</code></td>
+        <td>Input-only analog pin (ADC1 unaffected by Wi-Fi)[cite: 1, 2]</td>
+      </tr>
+      <tr>
+        <td><strong>Digital GPIO</strong></td>
+        <td>Tamper Switch</td>
+        <td><code>GPIO 4</code></td>
+        <td>Internal pull-up enabled (<code>INPUT_PULLUP</code>)[cite: 1, 2]</td>
+      </tr>
+      <tr>
+        <td><strong>Digital Output</strong></td>
+        <td>Status LED</td>
+        <td><code>GPIO 2</code></td>
+        <td>Green LED indicator via 220Ω series resistor</td>
+      </tr>
+      <tr>
+        <td><strong>Digital Output</strong></td>
+        <td>Tamper LED</td>
+        <td><code>GPIO 13</code></td>
+        <td>Red LED indicator via 220Ω series resistor</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>Common Ground & Power Distribution Rule:</strong> All modules share a unified ground bus. The 5.0V output from the MT3608 powers the ESP32 <code>VIN</code>, MQ135 heater, DHT22, and MicroSD card. The SIM800L power rail must have the 1000 µF capacitor soldered directly across its pins.
+  </div>
+
+  <h2>5. Smart Contract Implementation (Polygon Amoy Testnet)</h2>
+  <pre><code>// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+/**
+ * @title ColdChainTracker
+ * @notice Verifies tamper-evident IoT cold chain telemetry batches on Polygon Amoy.
+ */
+contract ColdChainTracker {
+    struct BatchProof {
+        bytes32 merkleRoot;
+        string storageURI;       // IPFS CID or backend record pointer
+        uint256 committedAt;
+        bool tamperBreach;
+        address reporter;
+    }
+
+    mapping(string => BatchProof[]) private shipmentBatches;
+
+    event BatchCommitted(
+        string indexed shipmentId,
+        bytes32 indexed merkleRoot,
+        bool tamperBreach,
+        uint256 timestamp
+    );
+
+    function commitBatch(
+        string calldata shipmentId,
+        bytes32 merkleRoot,
+        string calldata storageURI,
+        bool tamperBreach
+    ) external {
+        shipmentBatches[shipmentId].push(BatchProof({
+            merkleRoot: merkleRoot,
+            storageURI: storageURI,
+            committedAt: block.timestamp,
+            tamperBreach: tamperBreach,
+            reporter: msg.sender
+        }));
+
+        emit BatchCommitted(shipmentId, merkleRoot, tamperBreach, block.timestamp);
+    }
+
+    function getBatchCount(string calldata shipmentId) external view returns (uint256) {
+        return shipmentBatches[shipmentId].length;
+    }
+
+    function getBatchProof(string calldata shipmentId, uint256 index) 
+        external 
+        view 
+        returns (
+            bytes32 merkleRoot,
+            string memory storageURI,
+            uint256 committedAt,
+            bool tamperBreach,
+            address reporter
+        ) 
+    {
+        require(index < shipmentBatches[shipmentId].length, "Index out of range");
+        BatchProof memory b = shipmentBatches[shipmentId][index];
+        return (b.merkleRoot, b.storageURI, b.committedAt, b.tamperBreach, b.reporter);
+    }
+}</code></pre>
+
+</body>
+</html>

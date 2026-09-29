@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- App Icon Squircle Clip Path -->
+    <clipPath id="squircleClip">
+      <rect x="0" y="0" width="512" height="512" rx="115" ry="115" />
+    </clipPath>
+
+    <!-- Deep Cyber/Ice Radial Canvas -->
+    <radialGradient id="iconBg" cx="35%" cy="25%" r="85%">
+      <stop offset="0%" stop-color="#143152"/>
+      <stop offset="45%" stop-color="#081526"/>
+      <stop offset="100%" stop-color="#02060b"/>
+    </radialGradient>
+
+    <!-- Glowing Cyber Edge Border -->
+    <linearGradient id="edgeGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00ffff" stop-opacity="0.9"/>
+      <stop offset="40%" stop-color="#0284c7" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#6366f1" stop-opacity="0.8"/>
+    </linearGradient>
+
+    <!-- Shield Perimeter Gradient -->
+    <linearGradient id="shieldStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="25%" stop-color="#00ffff"/>
+      <stop offset="75%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+
+    <!-- Isometric Crystal Cube Facets -->
+    <linearGradient id="cubeTop" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00ffff" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="1"/>
+    </linearGradient>
+    <linearGradient id="cubeLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#082f49" stop-opacity="1"/>
+    </linearGradient>
+    <linearGradient id="cubeRight" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#034e7b" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <!-- Neon Glow Filters -->
+    <filter id="coreGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10" result="blur1"/>
+      <feGaussianBlur stdDeviation="20" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="subtleGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Master App Icon Canvas (Masked Squircle) -->
+  <g clip-path="url(#squircleClip)">
+    
+    <!-- Background Base -->
+    <rect width="512" height="512" fill="url(#iconBg)" />
+
+    <!-- Ambient Core Reflection Behind Shield -->
+    <circle cx="256" cy="245" r="140" fill="#00ffff" opacity="0.15" filter="url(#coreGlow)" />
+
+    <!-- Subtle Diagonal Background Circuit Trace Grid -->
+    <g opacity="0.08" stroke="#00ffff" stroke-width="2" fill="none">
+      <path d="M -50,150 L 150,-50 M -50,350 L 350,-50 M 50,550 L 550,50 M 250,550 L 550,250" />
+      <circle cx="95" cy="95" r="4" fill="#00ffff" />
+      <circle cx="417" cy="417" r="4" fill="#00ffff" />
+    </g>
+
+    <!-- ==================== CENTRAL ICON EMBLEM ==================== -->
+    <g id="app-symbol" transform="translate(256, 252)">
+
+      <!-- Outer Cryptographic Cyber-Shield -->
+      <polygon points="0,-160 135,-80 135,65 0,165 -135,65 -135,-80"
+               fill="#071322" fill-opacity="0.75"
+               stroke="url(#shieldStroke)" stroke-width="4.5"
+               filter="url(#subtleGlow)" />
+
+      <!-- Inner Thin Data Track -->
+      <polygon points="0,-136 112,-68 112,52 0,138 -112,52 -112,-68"
+               fill="none"
+               stroke="#38bdf8" stroke-width="1.8" stroke-opacity="0.45"
+               stroke-dasharray="12, 6" />
+
+      <!-- Cryo-Crystal Shard Anchors (Node Pins) -->
+      <!-- Top -->
+      <g transform="translate(0, -136)">
+        <polygon points="0,-16 9,0 0,16 -9,0" fill="#00ffff" filter="url(#subtleGlow)" />
+        <line x1="0" y1="16" x2="0" y2="48" stroke="#00ffff" stroke-width="2.5" stroke-opacity="0.8" />
+      </g>
+      <!-- Bottom -->
+      <g transform="translate(0, 138)">
+        <polygon points="0,-16 9,0 0,16 -9,0" fill="#00ffff" filter="url(#subtleGlow)" />
+        <line x1="0" y1="-16" x2="0" y2="-48" stroke="#00ffff" stroke-width="2.5" stroke-opacity="0.8" />
+      </g>
+      <!-- Top-Right -->
+      <g transform="translate(112, -68)">
+        <polygon points="0,-12 7,0 0,12 -7,0" fill="#38bdf8" />
+        <line x1="-7" y1="4" x2="-38" y2="24" stroke="#38bdf8" stroke-width="2" stroke-opacity="0.6" />
+      </g>
+      <!-- Bottom-Right -->
+      <g transform="translate(112, 52)">
+        <polygon points="0,-12 7,0 0,12 -7,0" fill="#38bdf8" />
+        <line x1="-7" y1="-4" x2="-38" y2="-24" stroke="#38bdf8" stroke-width="2" stroke-opacity="0.6" />
+      </g>
+      <!-- Bottom-Left -->
+      <g transform="translate(-112, 52)">
+        <polygon points="0,-12 7,0 0,12 -7,0" fill="#38bdf8" />
+        <line x1="7" y1="-4" x2="38" y2="-24" stroke="#38bdf8" stroke-width="2" stroke-opacity="0.6" />
+      </g>
+      <!-- Top-Left -->
+      <g transform="translate(-112, -68)">
+        <polygon points="0,-12 7,0 0,12 -7,0" fill="#38bdf8" />
+        <line x1="7" y1="4" x2="38" y2="24" stroke="#38bdf8" stroke-width="2" stroke-opacity="0.6" />
+      </g>
+
+      <!-- Center Isometric Hyper-Cube (Cold Storage Block) -->
+      <!-- Top Facet -->
+      <polygon points="0,-64 56,-32 0,0 -56,-32" fill="url(#cubeTop)" />
+      <!-- Left Facet -->
+      <polygon points="-56,-32 0,0 0,64 -56,32" fill="url(#cubeLeft)" />
+      <!-- Right Facet -->
+      <polygon points="0,0 56,-32 56,32 0,64" fill="url(#cubeRight)" />
+
+      <!-- Edge Highlights on Cube -->
+      <line x1="0" y1="0" x2="0" y2="64" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.6" />
+      <line x1="0" y1="0" x2="-56" y2="-32" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.4" />
+      <line x1="0" y1="0" x2="56" y2="-32" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.8" />
+
+      <!-- Cryptographic Proof Sparkle (Center Point) -->
+      <circle cx="0" cy="0" r="6" fill="#ffffff" filter="url(#coreGlow)" />
+    </g>
+
+    <!-- Top Edge Glass Gloss Sheen -->
+    <ellipse cx="256" cy="40" rx="200" ry="60" fill="#ffffff" opacity="0.05" />
+
+    <!-- Outer Squircle Border Accent -->
+    <rect x="2" y="2" width="508" height="508" rx="113" ry="113" 
+          fill="none" stroke="url(#edgeGlow)" stroke-width="4" stroke-opacity="0.7" />
+  </g>
+</svg>
